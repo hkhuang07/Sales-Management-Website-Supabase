@@ -1,12 +1,10 @@
     XÂY DỰNG DỰ ÁN SỬ DỤNG DỊCH VỤ LƯU TRỮ ĐÁM MÂY
 ---------------------------------------------------------
-Tôi muốn xây dự một dự án sử dụng dịch vụ Điện Toán Đám Mây để làm đồ án cho môn Điện Toán Đám Mây.
+Xây dự một dự án sử dụng dịch vụ Điện Toán Đám Mây để làm đồ án cho môn Điện Toán Đám Mây.
 - Yêu cầu:
 	+ Sử dụng 1 dịch vụ đám mây
 	+ Sử dụng dịch vụ đám mây có khả năng lưu trữ cơ sở dữ liệu NoSQL chẳng hạn như Firebase, MongoDB...
 	+ Từ đó xây dựng một trang web
-- Hãy đề xuất 1 dịch vụ đám mây phù hợp cho dự án này do tôi đã làm dự án bằng Firebase và MongoDB. Do đó dịch vụ sử dụng trong dự án này tôi nghĩ nên dùng một dịch vụ khác để tăng sự đầu tư, dịch vụ này đơn giản dễ đăng ký, dễ sử dụng, quan trọng là phải miễn phí, có thể deploy trong web lưu trữ nhờ dịch vụ này. 
-- Bên cạnh đó, tôi muốn bạn đề xuất một trang web làm về vấn đề gì? Có thể là bán hàng, trang tin hay nội dung khác, hãy gợi ý thêm.
 	---------------------------------------
 1. Đề xuất dịch vụ đám mây phù hợp
 👉 Supabase
