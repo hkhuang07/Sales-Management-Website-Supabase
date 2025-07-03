@@ -2,112 +2,138 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Category Edit Result - 2H Second-Hand</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Category Edit Result - 2H Second-Hand</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <link rel="icon" href="favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="icon" href="favicon.ico">
 
-  <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/style.css" />
 </head>
 
 <body>
-  <div class="container-fluid">
-    <div id="Header">
-      <div class="header-content">
-        <div class="title-logo-wrapper">
-          <h1 class="site-title">2H Second-Hand</h1>
-          <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+    <div class="container-fluid">
+        <div id="Header">
+            <div class="header-content">
+                <div class="title-logo-wrapper">
+                    <h1 class="site-title">2H Second-Hand</h1>
+                    <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-    <div id="navbar"></div>
+        <div id="navbar"></div>
 
-    <div class="card mt-3">
-      <div class="card-header">Processing Edit Category...</div>
-      <div class="card-body" id="process-message">
-        <!-- Spinner -->
-        <div id="loadingSpinner" class="text-center">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Processing...</span>
-          </div>
-          <p class="mt-3">Processing, please wait...</p>
+        <div class="card mt-3">
+            <div class="card-header">Processing Edit Category...</div>
+            <div class="card-body" id="process-message-container">
+                <div id="loadingSpinner" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-3">Processing, please wait...</p>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="editCategoryStatus mb-4"></div>
+
+        <div id="footer"></div>
     </div>
 
-    <div id="footer"></div>
-  </div>
+    <script>
+        $(function () {
+            $("#navbar").load("inc/navbar.html");
+            $("#footer").load("inc/footer.html");
+        });
+    </script>
 
-  <script type="module">
-    
-    import { checkAdminOrManagerRole } from './inc/auth_check.js';
-    const allowed = await checkAdminOrManagerRole();
-    if (!allowed) {
-      // return để ngăn không tiếp tục xử lý nếu không có quyền
-      throw new Error("Unauthorized");
-    }
+    <script type="module">
+        import { checkAdminOrManagerRole } from './inc/auth_check.js';
+        import { supabase } from "./inc/config.js";
 
-    import { supabase } from "./inc/config.js";
-    const spinner = document.getElementById("loadingSpinner");
-    const statusBox = document.getElementsByClassName("editCategoryStatus")[0];
+        // Chờ cho DOM được tải hoàn chỉnh trước khi thực thi logic chính
+        window.addEventListener("DOMContentLoaded", async () => {
+            const loadingSpinner = document.getElementById("loadingSpinner");
+            const processMessageContainer = document.getElementById("process-message-container");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryid = urlParams.get("categoryid");
-    const categoryname = urlParams.get("categoryname");
+            // 1. Hiển thị spinner ngay lập tức
+            loadingSpinner.style.display = "block";
+            processMessageContainer.innerHTML = loadingSpinner.outerHTML; // Đảm bảo spinner hiển thị
 
-    async function updateCategory() {
-      // Hiện spinner trong suốt quá trình
-      spinner.style.display = "block";
-      statusBox.innerHTML = "";
+            // 2. Kiểm tra quyền truy cập trước
+            try {
+                const allowed = await checkAdminOrManagerRole();
+                if (!allowed) {
+                    loadingSpinner.style.display = "none";
+                    processMessageContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> You do not have permission to edit categories. Please log in as Administrator/Manager.
+                        </div>`;
+                    setTimeout(() => {
+                        window.location.href = 'index.html'; // Chuyển hướng về trang chủ
+                    }, 3000);
+                    return; // Dừng lại nếu không có quyền
+                }
+            } catch (authErr) {
+                console.error("Permission check error:", authErr);
+                loadingSpinner.style.display = "none";
+                processMessageContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-bug"></i>Error checking permissions: ${authErr.message}. Please try again.
+                    </div>`;
+                setTimeout(() => {
+                    window.location.href = 'categories.html';
+                }, 3000);
+                return;
+            }
 
-      try {
-        if (!categoryid || !categoryname) {
-          spinner.style.display = "none";
-          statusBox.innerHTML = `
-          <div class="alert alert-danger">❌ Missing category ID or name.</div>`;
-          return;
-        }
+            // 3. Lấy dữ liệu từ URL Parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryid = urlParams.get("categoryid"); // Lấy từ name="categoryid" trong form
+            const categoryname = urlParams.get("categoryname"); // Lấy từ name="categoryname" trong form
 
-        const { error } = await supabase
-          .from("tbl_categories")
-          .update({ categoryname })
-          .eq("categoryid", categoryid);
+            // 4. Thực hiện cập nhật danh mục vào Supabase
+            try {
+                if (!categoryid || !categoryname) {
+                    loadingSpinner.style.display = "none"; // Ẩn spinner
+                    processMessageContainer.innerHTML = `
+                        <div class="alert alert-danger">❌Missing Category ID or Category Name. Cannot update..</div>`;
+                    // Chuyển hướng sau khi thông báo lỗi
+                    setTimeout(() => {
+                        window.location.href = 'categories.html';
+                    }, 3000);
+                    return;
+                }
 
-        spinner.style.display = "none"; // Ẩn spinner sau khi xử lý
+                const { data, error } = await supabase // 'data' có thể là null cho update nếu không cần trả về gì
+                    .from("tbl_categories")
+                    .update({ categoryname: categoryname })
+                    .eq("categoryid", categoryid); // Cập nhật bản ghi có categoryid tương ứng
 
-        if (error) {
-          statusBox.innerHTML = `
-          <div class="alert alert-danger">❌ Error updating category: ${error.message}</div>`;
-        } else {
-          localStorage.removeItem("categoryid");
-          localStorage.removeItem("categoryname");
+                loadingSpinner.style.display = "none"; // Ẩn spinner sau khi xử lý
 
-          statusBox.innerHTML = `<div class="alert alert-success">✅ Category updated successfully! Redirecting...</div>`;
-
-          // Đợi 2 giây để người dùng thấy thông báo rồi mới chuyển
-          setTimeout(() => {
-            window.location.href = "categories.html";
-          }, 3000);
-        }
-      } catch (err) {
-        spinner.style.display = "none";
-        statusBox.innerHTML = `
-        <div class="alert alert-danger">❌ Unexpected error: ${err.message}</div>`;
-      }
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      setTimeout(updateCategory, 1500);
-    });
-  </script>
-
-
+                if (error) {
+                    console.error("Error updating catalog to Supabase:", error);
+                    processMessageContainer.innerHTML = `
+                        <div class="alert alert-danger">❌ Error updating catalog: ${error.message}</div>`;
+                } else {
+                    processMessageContainer.innerHTML = `<div class="alert alert-success">✅ Category updated successfully! Redirecting...</div>`;
+                }
+            } catch (err) {
+                console.error("Unexpected error while updating catalog:", err);
+                loadingSpinner.style.display = "none";
+                processMessageContainer.innerHTML = `
+                    <div class="alert alert-danger">❌ Unexpected error: ${err.message}</div>`;
+            } finally {
+                // Luôn chuyển hướng sau khi xử lý xong (thành công hoặc thất bại)
+                setTimeout(() => {
+                    window.location.href = "categories.html";
+                }, 3000); // 3 giây để người dùng đọc thông báo
+            }
+        });
+    </script>
 </body>
 
 </html>
