@@ -4,15 +4,15 @@
 
 ## 📖 Project Overview
 <p align="center">
-  <img src="demo/authentication.gif" width="400" height="200">
-  <img src="demo/checkout.gif" width="400" height="200"></br>
-  <img src="demo/categories.gif" width="400" height="200">
-  <img src="demo/items.gif" width="400" height="200"></br>
-   <img src="demo/buynow.gif" width="400" height="200">
-  <img src="demo/orders.gif" width="400" height="200"></br>
-  <img src="demo/users.gif" width="400" height="200">
-  <img src="demo/userprofile.gif"width="400" height="200"></br>
-  <img src="demo/settings.gif" width="400" height="200">
+  <img src="demo/productlist.PNG" width="400" height="200">
+  <img src="demo/categories.PNG" width="400" height="200"></br>
+  <img src="demo/orderlist.PNG" width="400" height="200">
+  <img src="demo/orderitemlist.PNG" width="400" height="200"></br>
+   <img src="demo/orderdetails.PNG" width="400" height="200">
+  <img src="demo/search.PNG" width="400" height="200"></br>
+  <img src="demo/card.PNG" width="400" height="200">
+  <img src="demo/index01.PNG"width="400" height="200"></br>
+  <img src="demo/index02.PNG" width="400" height="200">
 </p>
 
 
