@@ -1,19 +1,34 @@
-# 🛍️ SecondHand Sales Management Website Supabase
+![image](https://github.com/user-attachments/assets/9fc869d8-0bf5-4bc5-824c-e4b4cbc32352)# 🛍️ SecondHand Sales Management Website Supabase
 
 **Link Deploy Website**: (https://graceful-profiterole-21b706.netlify.app/)
 
 ## 📖 Project Overview
 <p align="center">
+  <img src="demo/header.PNG" width="800" height="200">
+  <img src="demo/index01.PNG" width="800" height="400">
+  <img src="demo/index02.PNG" width="800" height="400">
+  <img src="demo/footer.PNG" width="800" height="200"></br>
+  
+  <img src="demo/filter.PNG" width="400" height="200">
+  <img src="demo/search.PNG" width="400" height="200"> </br>
+  <img src="demo/cart.PNG" width="400" height="200">
+  <img src="demo/cart_add.PNG" width="400" height="200"></br>
+  
+  <img src="demo/productdetails.PNG" width="400" height="200">
+  <img src="demo/productdetails01.PNG" width="400" height="200"></br>
+
   <img src="demo/productlist.PNG" width="400" height="200">
   <img src="demo/categories.PNG" width="400" height="200"></br>
   <img src="demo/orderlist.PNG" width="400" height="200">
   <img src="demo/orderitemlist.PNG" width="400" height="200"></br>
-   <img src="demo/orderdetails.PNG" width="400" height="200">
-  <img src="demo/search.PNG" width="400" height="200"></br>
-  <img src="demo/cart.PNG" width="400" height="200">
-  <img src="demo/cart_add.PNG"width="400" height="200"></br>
-  <img src="demo/index01.PNG" width="400" height="200">
-  <img src="demo/index02.PNG" width="400" height="200">
+
+  <img src="demo/usermanager.PNG" width="400" height="200">
+  <img src="demo/profile.PNG" width="400" height="200"></br>
+  <img src="demo/buynow.PNG" width="400" height="200">
+  <img src="demo/checkout.PNG" width="400" height="200"></br>
+
+  <img src="demo/error404.PNG" width="400" height="200">
+  <img src="demo/error403.PNG" width="400" height="200"></br>
 
 </p>
 
