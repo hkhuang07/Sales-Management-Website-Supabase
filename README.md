@@ -4,6 +4,7 @@
 
 ## 📖 Project Overview
 <p align="center">
+  <img src="demo/header.PNG" width="800" height="400">
   <img src="demo/index01.PNG" width="800" height="500">
   <img src="demo/index02.PNG" width="800" height="500">
   <img src="demo/footer.PNG" width="800" height="400"></br>
@@ -11,7 +12,7 @@
   <img src="demo/filter.PNG" width="400" height="300">
   <img src="demo/search.PNG" width="400" height="300"> </br>
   <img src="demo/cart.PNG" width="400" height="300">
-  <img src="demo/cart_add.PNG" width="400" height="300"></br>
+  <img src="demo/cart_add.PNG" width="400" height="200"></br>
   
   <img src="demo/productdetails.PNG" width="400" height="300">
   <img src="demo/productdetails01.PNG" width="400" height="300"></br>
@@ -22,12 +23,12 @@
   <img src="demo/orderitemlist.PNG" width="400" height="300"></br>
 
   <img src="demo/usermanager.PNG" width="400" height="300">
-  <img src="demo/profile.PNG" width="400" height="300"></br>
+  <img src="demo/profile.PNG" width="400" height="200"></br>
   <img src="demo/buynow.PNG" width="400" height="300">
-  <img src="demo/checkout.PNG" width="400" height="300"></br>
+  <img src="demo/checkout.PNG" width="400" height="200"></br>
 
-  <img src="demo/error404.PNG" width="400" height="200">
-  <img src="demo/error403.PNG" width="400" height="200"></br>
+  <img src="demo/error404.PNG" width="400" height="300">
+  <img src="demo/error403.PNG" width="400" height="300"></br>
 
 </p>
 
