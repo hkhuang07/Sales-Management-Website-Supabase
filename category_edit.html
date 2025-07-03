@@ -2,116 +2,165 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edit Category - 2H Second-Hand</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit Category - 2H Second-Hand</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <link rel="stylesheet" href="./css/style.css" />
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="./css/style.css" />
 </head>
 
 <body>
-  <div class="container-fluid">
-    <div id="Header">
-      <div class="header-content">
-        <div class="title-logo-wrapper">
-          <h1 class="site-title">2H Second-Hand</h1>
-          <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
-        </div>
-      </div>
-    </div>
-    <div id="navbar"></div>
-
-    <div class="card mt-3">
-      <div class="card-header">Edit Category</div>
-      <div class="card-body">
-        <form id="editCategoryForm" action="category_edit_process.html" method="GET" class="needs-validation"
-          novalidate>
-          <input type="hidden" id="categoryid" name="categoryid" />
-          <div class="mb-3">
-            <label for="categoryname" class="form-label">Category Name</label>
-            <input type="text" class="form-control" id="categoryname" name="categoryname" required />
-            <div class="invalid-feedback">
-              Category name cannot be left blank.
+    <div class="container-fluid">
+        <div id="Header">
+            <div class="header-content">
+                <div class="title-logo-wrapper">
+                    <h1 class="site-title">2H Second-Hand</h1>
+                    <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+                </div>
             </div>
-          </div>
-          <button type="submit" class="btn btn-primary">
-            <i class="bi bi-floppy"></i> Update
-          </button>
-        </form>
-        <div id="message" class="mt-3"></div>
-      </div>
+        </div>
+        <div id="navbar"></div>
+
+        <div class="card mt-3">
+            <div class="card-header">Edit Category</div>
+            <div class="card-body">
+                <form id="editCategoryForm" action="category_edit_process.html" method="GET" class="needs-validation"
+                    novalidate>
+                    <input type="hidden" id="categoryid" name="categoryid" />
+                    <div class="mb-3">
+                        <label for="categoryname" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="categoryname" name="categoryname" required />
+                        <div class="invalid-feedback">
+                            Category name cannot be left blank.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="updateButton">
+                        <i class="bi bi-floppy"></i> Update
+                    </button>
+                </form>
+                <div id="message" class="mt-3">
+                    </div>
+            </div>
+        </div>
+        <div id="footer"></div>
     </div>
-    <div id="footer"></div>
-  </div>
 
-  <script type="module">
+    <script>
+        $(function () {
+            $("#navbar").load("inc/navbar.html");
+            $("#footer").load("inc/footer.html");
+        });
+    </script>
 
-    import { checkAdminOrManagerRole } from './inc/auth_check.js';
-    const allowed = await checkAdminOrManagerRole();
-    if (!allowed) {
-      // return để ngăn không tiếp tục xử lý nếu không có quyền
-      throw new Error("Unauthorized");
-    }
+    <script type="module">
+        import { checkAdminOrManagerRole } from './inc/auth_check.js';
+        import { supabase } from "./inc/config.js";
 
-    import { supabase } from "./inc/config.js";
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryid = urlParams.get("id");
+        const messageDiv = document.getElementById("message");
+        const editCategoryForm = document.getElementById("editCategoryForm");
+        const updateButton = document.getElementById("updateButton");
 
-    async function loadCategory() {
-      if (!categoryid) {
-        document.getElementById("message").innerHTML = `<div class="alert alert-danger">Missing category ID in URL.</div>`;
-        return;
-      }
+        $(async function () { // Sử dụng async function cho JQuery ready
+            // Đảm bảo navbar và footer đã được tải xong (tùy chọn)
+            // Hoặc có thể đặt logic sau một timeout ngắn nếu cần
+            
+            // 1. Kiểm tra quyền truy cập
+            try {
+                const allowed = await checkAdminOrManagerRole();
+                if (!allowed) {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> You do not have permission to access this page. Please log in as Administrator/Manager.
+                        </div>`;
+                    updateButton.disabled = true; // Vô hiệu hóa nút update
+                    editCategoryForm.style.pointerEvents = 'none'; // Vô hiệu hóa form
+                    setTimeout(() => {
+                        window.location.href = 'index.html'; // Chuyển hướng sau vài giây
+                    }, 3000);
+                    return; // Ngăn không cho các script khác chạy
+                }
+            } catch (authError) {
+                console.error("Error checking permissions:", authError);
+                messageDiv.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-bug"></i> Error checking permissions: ${authError.message}. Please try again.
+                    </div>`;
+                updateButton.disabled = true;
+                editCategoryForm.style.pointerEvents = 'none';
+                return;
+            }
 
-      const { data, error } = await supabase
-        .from("tbl_categories")
-        .select("*")
-        .eq("categoryid", categoryid)
-        .single();
+            // 2. Lấy categoryid từ URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryid = urlParams.get("id"); // URL của bạn có thể là categories_edit.html?id=123
 
-      if (error) {
-        document.getElementById("message").innerHTML = `<div class="alert alert-danger">Error loading category: ${error.message}</div>`;
-        return;
-      }
+            // 3. Tải dữ liệu danh mục hiện có
+            async function loadCategory() {
+                if (!categoryid) {
+                    messageDiv.innerHTML = `<div class="alert alert-danger">Missing category ID in URL.</div>`;
+                    updateButton.disabled = true;
+                    editCategoryForm.style.pointerEvents = 'none';
+                    return;
+                }
 
-      if (data) {
-        document.getElementById("categoryid").value = data.categoryid;
-        document.getElementById("categoryname").value = data.categoryname;
-      }
-    }
+                try {
+                    const { data, error } = await supabase
+                        .from("tbl_categories")
+                        .select("*")
+                        .eq("categoryid", categoryid)
+                        .single(); // Sử dụng .single() vì bạn chỉ mong đợi một kết quả
 
-    loadCategory();
-  </script>
+                    if (error) {
+                        console.error("Error loading categories:", error);
+                        messageDiv.innerHTML = `<div class="alert alert-danger">Error loading categories: ${error.message}</div>`;
+                        updateButton.disabled = true;
+                        editCategoryForm.style.pointerEvents = 'none';
+                    } else if (data) {
+                        // Điền dữ liệu vào form
+                        document.getElementById("categoryid").value = data.categoryid;
+                        document.getElementById("categoryname").value = data.categoryname;
+                    } else {
+                        // Trường hợp không tìm thấy dữ liệu với ID này
+                        messageDiv.innerHTML = `<div class="alert alert-warning">No category found with ID: ${categoryid}</div>`;
+                        updateButton.disabled = true;
+                        editCategoryForm.style.pointerEvents = 'none';
+                    }
+                } catch (err) {
+                    console.error("Unexpected error while loading catalog:", err);
+                    messageDiv.innerHTML = `<div class="alert alert-danger">Unexpected error while loading catalog: ${err.message}</div>`;
+                    updateButton.disabled = true;
+                    editCategoryForm.style.pointerEvents = 'none';
+                }
+            }
 
-  <script>
-    (function () {
-      "use strict";
-      const form = document.getElementById("editCategoryForm");
-      form.addEventListener(
-        "submit",
-        function (event) {
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add("was-validated");
-        },
-        false
-      );
-    })();
-  </script>
+            loadCategory(); // Gọi hàm load category sau khi auth check và DOM sẵn sàng
+        });
 
-  <script>
-    $(function () {
-      $("#navbar").load("inc/navbar.html");
-      $("#footer").load("inc/footer.html");
-    });
-  </script>
+        // 4. Xử lý validation form (Giữ nguyên)
+        (function () {
+            "use strict";
+            const form = document.getElementById("editCategoryForm");
+            form.addEventListener(
+                "submit",
+                function (event) {
+                    // event.preventDefault() và event.stopPropagation() được xử lý tự động bởi form validation khi dùng method="GET"
+                    // Nếu dùng form.submit() bằng JS thì cần handle thủ công
+                    if (!form.checkValidity()) {
+                        event.preventDefault(); // Ngăn chặn form submit nếu không hợp lệ
+                        event.stopPropagation();
+                    }
+                    form.classList.add("was-validated"); // Thêm class để hiển thị feedback
+                },
+                false
+            );
+        })();
+    </script>
 </body>
 
 </html>
