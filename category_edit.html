@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Category - 2H Second-Hand</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div id="Header">
+      <div class="header-content">
+        <div class="title-logo-wrapper">
+          <h1 class="site-title">2H Second-Hand</h1>
+          <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+        </div>
+      </div>
+    </div>
+    <div id="navbar"></div>
+
+    <div class="card mt-3">
+      <div class="card-header">Edit Category</div>
+      <div class="card-body">
+        <form id="editCategoryForm" action="category_edit_process.html" method="GET" class="needs-validation"
+          novalidate>
+          <input type="hidden" id="categoryid" name="categoryid" />
+          <div class="mb-3">
+            <label for="categoryname" class="form-label">Category Name</label>
+            <input type="text" class="form-control" id="categoryname" name="categoryname" required />
+            <div class="invalid-feedback">
+              Category name cannot be left blank.
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-floppy"></i> Update
+          </button>
+        </form>
+        <div id="message" class="mt-3"></div>
+      </div>
+    </div>
+    <div id="footer"></div>
+  </div>
+
+  <script type="module">
+
+    import { checkAdminOrManagerRole } from './inc/auth_check.js';
+    const allowed = await checkAdminOrManagerRole();
+    if (!allowed) {
+      // return để ngăn không tiếp tục xử lý nếu không có quyền
+      throw new Error("Unauthorized");
+    }
+
+    import { supabase } from "./inc/config.js";
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryid = urlParams.get("id");
+
+    async function loadCategory() {
+      if (!categoryid) {
+        document.getElementById("message").innerHTML = `<div class="alert alert-danger">Missing category ID in URL.</div>`;
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("tbl_categories")
+        .select("*")
+        .eq("categoryid", categoryid)
+        .single();
+
+      if (error) {
+        document.getElementById("message").innerHTML = `<div class="alert alert-danger">Error loading category: ${error.message}</div>`;
+        return;
+      }
+
+      if (data) {
+        document.getElementById("categoryid").value = data.categoryid;
+        document.getElementById("categoryname").value = data.categoryname;
+      }
+    }
+
+    loadCategory();
+  </script>
+
+  <script>
+    (function () {
+      "use strict";
+      const form = document.getElementById("editCategoryForm");
+      form.addEventListener(
+        "submit",
+        function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    })();
+  </script>
+
+  <script>
+    $(function () {
+      $("#navbar").load("inc/navbar.html");
+      $("#footer").load("inc/footer.html");
+    });
+  </script>
+</body>
+
+</html>

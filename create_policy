@@ -1,0 +1,45 @@
+--SELECT 
+create policy "Enable read access for all users"
+on "public"."tbl_categories"
+as PERMISSIVE
+for SELECT
+to public
+using (
+  true
+);
+
+
+--INSERT
+create policy "Enable insert for authenticated users only"
+on "public"."tbl_categories"
+as PERMISSIVE
+for INSERT
+to authenticated
+with check (
+  true
+);
+
+--UPDATE
+create policy "Enable update for users based on email"
+on "public"."tbl_categories"
+as PERMISSIVE
+for UPDATE
+to public
+using (
+true
+)
+with check (
+true
+);
+
+--DELETE
+create policy "Enable delete for users based on user_id"
+on "public"."tbl_categories"
+as PERMISSIVE
+for DELETE
+to public
+using (
+true
+);
+
+

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<link rel="icon" href="favicon.ico" />
+	<link rel="stylesheet" type="text/css" href="./css/style.css" />
+	<title>Processing Add Categories - 2H Second-Hand</title>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div id="Header">
+			<div class="header-content">
+				<div class="title-logo-wrapper">
+					<h1 class="site-title">2H Second-Hand</h1>
+					<img src="images/logoHKHuang01.jpg" alt="Logo" class="logo" />
+				</div>
+			</div>
+		</div>
+		<div id="navbar"></div>
+
+		<div class="card mt-3">
+			<div class="card-header">Processing Add Categories...</div>
+			<div class="card-body text-center">
+				
+				<div id="message">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Processing...</span>
+					</div>
+					<p class="mt-3">Please wait while we add your category...</p>
+				</div>
+
+			</div>
+		</div>
+
+		<div id="footer"></div>
+	</div>
+
+	<script>
+		$(function () {
+			$('#navbar').load('inc/navbar.html');
+			$('#footer').load('inc/footer.html');
+		});
+	</script>
+
+	<script type="module">
+
+		import { checkAdminOrManagerRole } from './inc/auth_check.js';
+		const allowed = await checkAdminOrManagerRole();
+		if (!allowed) {
+			// return để ngăn không tiếp tục xử lý nếu không có quyền
+			throw new Error("Unauthorized");
+		}
+
+		import { supabase } from './inc/config.js';
+
+		const categoryName = localStorage.getItem('categoryname');
+
+		async function addCategory() {
+			try {
+				const { data, error } = await supabase
+					.from('tbl_categories')
+					.insert([{ categoryname: categoryName }]);
+
+
+				if (error) {
+					localStorage.removeItem('categoryname');
+
+					document.getElementById("message").innerHTML = `
+				<div class="alert alert-danger">
+					<i class="bi bi-x-circle"></i>❌ Failed to add category: ${error.message}
+				</div>`;
+					setTimeout(() => {
+						window.location.href = 'categories.html';
+					}, 2000)
+				} else {
+					localStorage.removeItem('categoryname');
+					document.getElementById("message").innerHTML = `
+				<div class="alert alert-success">
+					<i class="bi bi-check-circle"></i>✅ Category added successfully!
+				</div>`;
+					setTimeout(() => {
+						window.location.href = 'categories.html';
+					}, 2000)
+				}
+			} catch (err) {
+				document.getElementById("message").innerHTML = `
+			<div class="alert alert-danger">
+				<i class="bi bi-bug"></i>❌ Unexpected error: ${err.message}
+			</div>`;
+				setTimeout(() => {
+					window.location.href = 'categories.html';
+				}, 2000)
+			}
+		}
+
+		window.addEventListener("DOMContentLoaded", () => {
+			setTimeout(() => {
+				addCategory();
+			}, 2000); // 2 seconds delay
+		});
+	</script>
+</body>
+
+</html>

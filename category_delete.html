@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" type="text/css" href="./css/style.css" />
+  <title>Delete Categories - 2H Second-Hand</title>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div id="Header">
+      <div class="header-content">
+        <div class="title-logo-wrapper">
+          <h1 class="site-title">2H Second-Hand</h1>
+          <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+        </div>
+      </div>
+    </div>
+
+    <div id="navbar"></div>
+
+    <div class="card mt-3">
+      <div class="card-header">Delete Category</div>
+      <div class="card-body">
+        <!-- Vùng hiển thị spinner hoặc thông báo -->
+        <div id="message"></div>
+        <!-- Nội dung xác nhận xóa sẽ được thêm qua JS -->
+        <div id="delete-confirmation"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+  </div>
+
+  <script>
+    $(function () {
+      $("#navbar").load("inc/navbar.html");
+      $("#footer").load("inc/footer.html");
+    });
+  </script>
+
+  <script type="module" src="inc/config.js"></script>
+  <script type="module">
+
+    import { checkAdminOrManagerRole } from './inc/auth_check.js';
+    const allowed = await checkAdminOrManagerRole();
+    if (!allowed) {
+      // return để ngăn không tiếp tục xử lý nếu không có quyền
+      throw new Error("Unauthorized");
+    }
+
+    import { supabase } from "./inc/config.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const docID = urlParams.get("id");
+
+    const messageDiv = document.getElementById("message");
+    const confirmationDiv = document.getElementById("delete-confirmation");
+
+    if (!docID) {
+      messageDiv.innerHTML = `
+        <div class="alert alert-danger">❌ No category ID provided.</div>
+      `;
+      confirmationDiv.innerHTML = `
+        <a href="categories.html" class="btn btn-secondary mt-2">Back to list</a>
+      `;
+    } else {
+      confirmationDiv.innerHTML = `
+        <div class="alert alert-warning">
+          <h5>⚠️ Are you sure you want to delete this category?</h5>
+          <p>This action cannot be undone.</p>
+          <button id="confirmDeleteBtn" class="btn btn-danger me-2">
+            <i class="bi bi-trash"></i> Confirm Delete
+          </button>
+          <a href="categories.html" class="btn btn-secondary">Back to list</a>
+        </div>
+      `;
+
+      document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+        messageDiv.innerHTML = `
+          <div class="text-center">
+            <div class="spinner-border text-danger" role="status">
+              <span class="visually-hidden">Deleting...</span>
+            </div>
+            <p class="mt-3">Deleting category, please wait...</p>
+          </div>
+        `;
+        confirmationDiv.innerHTML = "";
+
+        setTimeout(async () => {
+          const { error } = await supabase
+            .from("tbl_categories")
+            .delete()
+            .eq("categoryid", docID);
+
+          if (error) {
+            messageDiv.innerHTML = `
+              <div class="alert alert-danger">❌ An error occurred: ${error.message}</div>
+              <a href="categories.html" class="btn btn-secondary mt-2">Back to list</a>
+            `;
+          } else {
+            messageDiv.innerHTML = `
+              <div class="alert alert-success">✅ Category deleted successfully.</div>
+            `;
+            setTimeout(() => {
+              window.location.href = "categories.html";
+            }, 2000);
+          }
+        }, 2000); // Đợi 2 giây trước khi thực hiện xóa
+      });
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2H Second-Hand</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="light-mode">
+    <div class="container-fluid">
+        <!-- Light/Dark Mode Toggle -->
+
+        <div id="Header">
+            <div class="header-content">
+                <div class="theme-toggle text-end p-2">
+                    <button id="themeToggle" class="btn btn-outline-primary">
+                        <i class="bi bi-moon-stars-fill"></i> Toggle Dark Mode
+                    </button>
+                </div>
+                <div class="title-logo-wrapper">
+                    <h1 class="site-title">2H Second-Hand</h1>
+                    <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+                </div>
+            </div>
+        </div>
+
+        <div id="navbar"></div>
+
+        <!-- Main Layout with 3 Columns -->
+        <div class="row mt-3">
+            <!-- Left: Filter -->
+            <div class="Left col-md-2">
+                <div class="card-header text-center fw-bold mb-2">📂 Filter</div>
+                <div id="categoryButtons" class="btn-group-vertical w-100">
+                    <!-- Danh mục sẽ được tạo động -->
+                </div>
+            </div>
+
+            <!-- Center Content -->
+            <div class="col-md-8">
+                <!-- Best-Selling Products -->
+                <div class="card-header">🔥 Best-Selling Products</div>
+                <div id="bestSellersWrapper" class="border rounded mb-3">
+                    <div id="bigPic" class="position-relative mt-3 mb-3" style="height: 300px; overflow: hidden; ">
+                    </div>
+                    <ul id="thumbs" class="d-flex gap-2 list-unstyled overflow-auto"></ul>
+                </div>
+
+                <!-- Most Favorited -->
+                <div class="card-header">⭐ Most Favorited</div>
+                <div id="favoritedProducts" class="d-flex flex-row overflow-x-auto gap-3 mb-3 border rounded"></div>
+
+                <!-- Most Viewed -->
+                <div class="card-header">👀 Most Viewed Products</div>
+                <div id="viewedProducts" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-4 g-3 mt-2 mb-3">
+                </div>
+
+                <nav>
+                    <ul class="pagination justify-content-center mt-3" id="pagination"></ul>
+                </nav>
+            </div>
+
+            <!-- Right: Newest Products -->
+            <div class="Right col-md-2 d-flex flex-column">
+                <div class="card-header mb-2">🆕 Newest Products</div>
+                <div id="latestProducts" class="d-flex flex-column align-items-center gap-3"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div id="footer" class="mt-4"></div>
+    </div>
+
+    <!-- Load common UI -->
+    <script>
+        $(function () {
+            $('#navbar').load('inc/navbar.html');
+            $('#footer').load('inc/footer.html');
+        });
+
+        // Light/Dark Mode Toggle
+        $('#themeToggle').on('click', function () {
+            $('body').toggleClass('light-mode dark-mode');
+            const isDark = $('body').hasClass('dark-mode');
+            $(this).html(isDark ?
+                '<i class="bi bi-sun-fill"></i> Toggle Light Mode' :
+                '<i class="bi bi-moon-stars-fill"></i> Toggle Dark Mode');
+        });
+    </script>
+
+    <!-- Load Supabase and Product Data -->
+    <script type="module">
+        import { supabase } from './inc/config.js';
+
+        const productCard = (prod, full = true) => ` 
+      <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
+        <div class="product-card d-flex flex-column border rounded shadow-sm bg-white p-2 h-100">
+          <div class="text-center">
+            <img src="${prod.image}" class="product-img mb-2 img-fluid" alt="${prod.productname}" />
+          </div>
+          <div class="product-body d-flex flex-column justify-content-between flex-grow-1">
+            <h6 class="text-truncate mb-1" title="${prod.productname}">
+              ${prod.productname}
+            </h6>
+            <p class="text-danger fw-bold mb-1">
+              ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
+              <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
+                ${prod.price.toLocaleString()}₫
+              </span>
+            </p>
+            ${full ? `
+              <div class="d-flex gap-2 mt-auto">
+                <a href="cart_add.html?id=${prod.productid}" class="btn btn-primary">
+                  <i class="bi bi-cart-plus"></i> Add
+                </a>
+                <button class="btn btn-success buyNow" data-id="${prod.productid}">
+                  <i class="bi bi-cash-stack"></i> Buy 
+                </button>
+              </div>` : ""}
+          </div>
+        </div>
+      </a>`;
+
+        const displayCard = (prod, full = true) => ` 
+      <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
+        <div class="product-card d-flex flex-column border rounded shadow-sm bg-white h-100" style="min-width: 180px; max-width:180px;">
+          <div class="text-center">
+            <img src="${prod.image}" class="product-img mb-2 img-fluid" alt="${prod.productname}" />
+          </div>
+          <div class="product-body d-flex flex-column justify-content-between flex-grow-1">
+            <h6 class="text-truncate mb-1" title="${prod.productname}">
+              ${prod.productname}
+            </h6>
+            <p class="text-danger fw-bold mb-1">
+              ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
+              <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
+                ${prod.price.toLocaleString()}₫
+              </span>
+            </p>
+            ${full ? `
+              <div class="d-flex gap-2 mt-auto">
+                <a href="cart_add.html?id=${prod.productid}" class="btn btn-primary">
+                  <i class="bi bi-cart-plus"></i> Add
+                </a>
+                <button class="btn btn-success buyNow" data-id="${prod.productid}">
+                  <i class="bi bi-cash-stack"></i> Buy 
+                </button>
+              </div>` : ""}
+          </div>
+        </div>
+      </a>`;
+
+        // Điều hướng mua ngay
+        $(document).on('click', '.buyNow', function () {
+            const id = $(this).data('id');
+            window.location.href = `buynow.html?id=${id}`;
+        });
+
+        // Load danh mục
+        const loadCategories = async () => {
+            const { data, error } = await supabase
+                .from('tbl_categories')
+                .select('categoryid, categoryname');
+
+            if (error) {
+                console.error('Error loading categories:', error.message);
+                return;
+            }
+
+            const container = document.getElementById('categoryButtons');
+            data.forEach(cat => {
+                const btn = document.createElement('a');
+                btn.href = `filter.html?q=${cat.categoryid}`;
+                btn.className = 'btn category-btn';
+                btn.textContent = cat.categoryname;
+                container.appendChild(btn);
+            });
+        };
+
+        // Best Sellers
+        const loadBestSellers = async () => {
+            const { data } = await supabase
+                .from('tbl_products')
+                .select('*')
+                .order('purchasecount', { ascending: false })
+                .limit(8);
+
+            const bigPic = document.getElementById('bigPic');
+            const thumbs = document.getElementById('thumbs');
+            bigPic.innerHTML = '';
+            thumbs.innerHTML = '';
+
+            data.forEach((prod, idx) => {
+                const img = document.createElement('img');
+                img.src = prod.image;
+                img.alt = prod.productname;
+                img.style.cursor = 'pointer';
+                if (idx === 0) img.style.display = 'block';
+                img.addEventListener('click', () => {
+                    window.location.href = `product_details.html?id=${prod.productid}`;
+                });
+                bigPic.appendChild(img);
+
+                const thumbLi = document.createElement('li');
+                if (idx === 0) thumbLi.classList.add('active');
+                thumbLi.setAttribute('rel', idx + 1);
+
+                const thumbImg = document.createElement('img');
+                thumbImg.src = prod.image;
+                thumbImg.alt = prod.productname;
+                thumbImg.style.cursor = 'pointer';
+                thumbImg.addEventListener('click', () => {
+                    window.location.href = `product_details.html?id=${prod.productid}`;
+                });
+                thumbLi.appendChild(thumbImg);
+                thumbs.appendChild(thumbLi);
+            });
+
+            initSlideshow();
+        };
+
+        let currentImage, currentIndex = -1, interval;
+
+        function showImage(index) {
+            const images = $('#bigPic img');
+            if (index < images.length) {
+                const newImage = images[index];
+                if (currentImage && currentImage !== newImage) {
+                    $(currentImage).css('z-index', 2);
+                    clearTimeout(interval);
+                    $(currentImage).fadeOut(300, function () {
+                        $(this).css({ display: 'none', zIndex: 1 });
+                        interval = setTimeout(showNext, 3000);
+                    });
+                }
+                $(newImage).css({ display: 'block', opacity: 1 });
+                currentImage = newImage;
+                currentIndex = index;
+                $('#thumbs li').removeClass('active');
+                $($('#thumbs li')[index]).addClass('active');
+            }
+        }
+
+        function showNext() {
+            const len = $('#bigPic img').length;
+            const next = currentIndex < (len - 1) ? currentIndex + 1 : 0;
+            showImage(next);
+        }
+
+        function initSlideshow() {
+            setTimeout(() => {
+                showNext();
+                interval = setTimeout(showNext, 3000);
+
+                $('#thumbs li').on('click', function () {
+                    const idx = parseInt($(this).attr('rel')) - 1;
+                    showImage(idx);
+                });
+            }, 100);
+        }
+
+        // Most Favorited
+        const loadFavorited = async () => {
+            const { data } = await supabase
+                .from('tbl_products')
+                .select('*')
+                .order('favoritecount', { ascending: false });
+
+            const container = document.getElementById('favoritedProducts');
+            data.forEach(prod => {
+                container.innerHTML += displayCard(prod);
+            });
+        };
+
+        // Newest Products
+        const loadLatest = async () => {
+            const { data } = await supabase
+                .from('tbl_products')
+                .select('*')
+                .order('productid', { ascending: false });
+
+            const container = document.getElementById('latestProducts');
+            data.forEach(prod => {
+                container.innerHTML += displayCard(prod, false);
+            });
+        };
+
+        // Most Viewed with Pagination
+        let currentPage = 1;    
+        const perPage = 15;
+        const loadViewed = async (page = 1) => {
+            const from = (page - 1) * perPage;
+            const to = from + perPage - 1;
+
+            const { data, count } = await supabase
+                .from('tbl_products')
+                .select('*', { count: 'exact' })
+                .order('view', { ascending: false })
+                .range(from, to);
+
+            const container = document.getElementById('viewedProducts');
+            container.innerHTML = '';
+            data.forEach(prod => {
+                container.innerHTML += `
+          <div class="col custom-col">
+            ${productCard(prod)}
+          </div>`;
+            });
+
+            const totalPage = Math.ceil(count / perPage);
+            const pag = document.getElementById('pagination');
+            pag.innerHTML = '';
+            for (let i = 1; i <= totalPage; i++) {
+                pag.innerHTML += `
+          <li class="page-item ${i === page ? 'active' : ''}">
+            <button class="page-link" onclick="loadViewed(${i})">${i}</button>
+          </li>`;
+            }
+        };
+        window.loadViewed = loadViewed;
+
+        // Load all on page load
+        loadCategories();
+        loadBestSellers();
+        loadFavorited();
+        loadLatest();
+        loadViewed(currentPage);
+    </script>
+</body>
+
+</html>

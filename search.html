@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2H Second-Hand - Search</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div id="Header">
+      <div class="header-content">
+        <div class="title-logo-wrapper">
+          <h1 class="site-title">2H Second-Hand</h1>
+          <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+        </div>
+      </div>
+    </div>
+
+    <!-- Load navbar & footer -->
+    <div id="navbar"></div>
+
+    <!-- Search Results -->
+    <div class="card-header mt-3">🔍 Search Results</div>
+    <div id="searchResults" class="row g-4 mb-3"></div>
+
+    <!-- Button về trang chủ -->
+    <div class="text-center mb-4">
+      <a href="index.html" class="btn btn-secondary">
+        <i class="bi bi-house"></i> Back to Home
+      </a>
+    </div>
+
+    <div id="footer" class="mt-4"></div>
+  </div>
+
+  <script>
+    $(function () {
+      $('#navbar').load('inc/navbar.html');
+      $('#footer').load('inc/footer.html');
+    });
+  </script>
+
+  <script type="module">
+    import { supabase } from './inc/config.js';
+
+    const displayCard = (prod) => `
+      <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
+        <div class="product-card d-flex flex-column border rounded shadow-sm bg-white p-2 h-100" style="min-width: 180px; max-width: 200px; min-height: 280px;">
+          <div class="text-center">
+            <img src="${prod.image}" class="product-img mb-2" alt="${prod.productname}" />
+          </div>
+          <div class="product-body d-flex flex-column justify-content-between flex-grow-1">
+            <h6 class="text-truncate mb-1" title="${prod.productname}">${prod.productname}</h6>
+            <p class="text-danger fw-bold mb-1">
+              ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
+              <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
+                ${prod.price.toLocaleString()}₫
+              </span>
+            </p>
+            <div class="d-flex gap-2 mt-auto">
+              <a href="cart_add.html?id=${prod.productid}" class="btn btn-primary">
+                <i class="bi bi-cart-plus"></i> Add
+              </a>
+              <button class="btn btn-success buyNow" data-id="${prod.productid}">
+                <i class="bi bi-cash-stack"></i> Buy
+              </button>
+            </div>
+          </div>
+        </div>
+      </a>
+    `;
+
+    // Điều hướng mua ngay
+    $(document).on('click', '.buyNow', function () {
+      const id = $(this).data('id');
+      window.location.href = `buynow.html?id=${id}`;
+    });
+
+    const searchProducts = async (keyword) => {
+      const { data } = await supabase
+        .from('tbl_products')
+        .select('*')
+        .ilike('productname', `%${keyword}%`);
+
+      const container = document.getElementById('searchResults');
+      container.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="alert alert-warning">No matching products were found.</div>';
+        return;
+      }
+
+      data.forEach(prod => {
+        container.innerHTML += `<div class="col-md-3">${displayCard(prod)}</div>`;
+      });
+    };
+
+    const getQueryParam = (name) => {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name) || '';
+    };
+
+    // Khi trang load
+    const keyword = getQueryParam('q');
+
+    if (!keyword) {
+      // Nếu không có từ khóa -> quay lại trang chủ
+      window.location.href = 'index.html';
+    } else {
+      searchProducts(keyword);
+    }
+  </script>
+</body>
+
+</html>

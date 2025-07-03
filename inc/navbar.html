@@ -1,0 +1,177 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: midnightblue;">
+  <div class="container-fluid">
+
+    <a class="navbar-brand" href="index.html"><i class="bi bi-basket mb-2"></i> 2H Second-Hand </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li id="auth-menu" class="nav-item">
+          <a class="nav-link active" href="cart.html"><i class="bi bi-cart-dash-fill"></i> My Shopping Card</a>
+        </li>
+      </ul>
+
+    <!-- Thanh tìm kiếm -->
+    <form class="d-flex" role="search" action="search.html" method="GET">
+      <input class="form-control me-2" type="search" name="q" placeholder="Search">
+      <button class="btn btn-success" type="submit">Search</button>
+    </form>
+
+
+    </div>
+
+  </div>
+</nav>
+
+<script>
+  function getCookie(cname) {
+    const name = cname + "=";
+    const decoded = decodeURIComponent(document.cookie);
+    const ca = decoded.split(';');
+    for (let c of ca) {
+      c = c.trim();
+      if (c.indexOf(name) === 0) return c.substring(name.length);
+    }
+    return "";
+  }
+
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) {
+      document.getElementById('user-profile').innerHTML = `
+        <li class="nav-item">
+          <a class="nav-link" href="signin.html"><i class="bi bi-box-arrow-in-right"></i> Sign in</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="signup.html"><i class="bi bi-person-add"></i> Sign up</a>
+        </li>`;
+      return;
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      document.getElementById('user-profile').innerHTML =
+        '<li class="nav-item text-danger">Failed to load user data.</li>';
+      return;
+    }
+
+    const fullName = user.user_metadata?.full_name || "No Name";
+    const avatarUrl = user.user_metadata?.avatar_url || "https://via.placeholder.com/40";
+    const email = user.email || '';
+
+    document.getElementById('user-profile').innerHTML = `
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="${avatarUrl}" alt="Avatar" class="rounded-circle me-2" width="32" height="40">
+          <span>${fullName}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="account.html"><i class="bi bi-person-circle"></i> My Account</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="signout.html"><i class="bi bi-box-arrow-right"></i> Log out (${email})</a></li>
+        </ul>
+      </li>`;
+  });
+
+
+  const uid = getCookie("uid");
+  const role = getCookie("role");
+  const email = getCookie("email");
+
+  let html = "";
+
+
+  if (!uid) {
+    html += `
+      <li class="nav-item">
+        <a class="nav-link" href="signup.html"><i class="bi bi-person-add"></i> Sign up</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="signin.html"><i class="bi bi-box-arrow-in-right"></i> Sign in</a>
+      </li>
+    `;
+  } else if (role === "manager") {
+    html += `
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+          <i class="bi bi-gear"></i> Management
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="categories.html"><i class="bi bi-tags"></i> Categories</a></li>
+          <li><a class="dropdown-item" href="products.html"><i class="bi bi-bag-dash"></i> Product</a></li>
+          <li><a class="dropdown-item" href="orders.html"><i class="bi bi-file-earmark-text"></i> Orders</a></li>
+          <li><a class="dropdown-item" href="order-items.html"><i class="bi bi-file-earmark-ruled"></i> Order Items</a></li> 
+          <li><hr class="dropdown-divider"></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle"></i> My Account
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="account.html"><i class="bi bi-person-badge"></i> Profile</a></li>
+          <li><a class="dropdown-item" href="signout.html"><i class="bi bi-box-arrow-right"></i> Log out (${email})</a>
+        </li>  
+        </ul>
+      </li>
+    `;
+  } else if (role === "admin") {
+    html += `
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+          <i class="bi bi-gear"></i> Management
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="accountmanager.html"><i class="bi bi-people"></i> Accounts</a></li>
+          <li><a class="dropdown-item" href="categories.html"><i class="bi bi-tags"></i> Categories</a></li>
+          <li><a class="dropdown-item" href="products.html"><i class="bi bi-bag-dash"></i> Product</a></li>
+          <li><a class="dropdown-item" href="orders.html"><i class="bi bi-file-earmark-text"></i> Orders</a></li>
+          <li><a class="dropdown-item" href="order-items.html"><i class="bi bi-file-earmark-ruled"></i> Order Items</a></li> 
+          <li><hr class="dropdown-divider"></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle"></i> My Account
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="account.html"><i class="bi bi-person-badge"></i> Profile</a></li>
+          <li><a class="dropdown-item" href="signout.html"><i class="bi bi-box-arrow-right"></i> Log out (${email})</a>
+        </li>  
+        </ul>
+      </li>
+    `;
+  } else {
+    html += `
+     <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+          <i class="bi bi-gear"></i> Management
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="products.html"><i class="bi bi-bag-dash"></i> Product</a></li>
+          <li><a class="dropdown-item" href="orders.html"><i class="bi bi-file-earmark-text"></i> Orders</a></li>
+          <li><a class="dropdown-item" href="order-items.html"><i class="bi bi-file-earmark-ruled"></i> Order Items</a></li> 
+          <li><hr class="dropdown-divider"></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle"></i> My Account
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="account.html"><i class="bi bi-person-badge"></i> Profile</a></li>
+          <li><a class="dropdown-item" href="signout.html"><i class="bi bi-box-arrow-right"></i> Log out (${email})</a>
+        </li>  
+        </ul>
+      </li>
+    `;
+  }
+  $(html).insertAfter("#auth-menu");
+
+
+</script>

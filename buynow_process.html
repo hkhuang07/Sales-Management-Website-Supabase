@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Buy Now Process - 2H Second-Hand</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script type="module" src="./inc/config.js"></script>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="./css/style.css" />
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div id="Header">
+            <div class="header-content">
+                <div class="title-logo-wrapper">
+                    <h1 class="site-title">2H Second-Hand</h1>
+                    <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+                </div>
+            </div>
+        </div>
+        <div id="navbar" class="mb-3"></div>
+
+        <div class="card-body status text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3">Processing your order, please wait...</p>
+        </div>
+
+        <div id="footer" class="mt-4"></div>
+
+    </div>
+
+    <script type="module">
+        import { supabase } from './inc/config.js';
+        import { checkLoggedIn } from './inc/auth_login.js';
+
+        async function mainProcess() {
+            const valid = await checkLoggedIn();
+            if (!valid) return;
+
+            $('#navbar').load('inc/navbar.html');
+            $('#footer').load('inc/footer.html');
+            const data = JSON.parse(localStorage.getItem("buyNowData"));
+            const userId = localStorage.getItem("userId");
+
+            const statusDiv = document.getElementsByClassName("status");
+
+            async function processOrder() {
+                if (!data || !userId) {
+                    statusDiv.innerHTML = `<div class="alert alert-danger">Missing order or user info.</div>`;
+                    return;
+                }
+
+                const { quantity, phone, address, productId } = data;
+                const qty = parseInt(quantity);
+                if (isNaN(qty) || qty <= 0) {
+                    statusDiv.innerHTML = `<div class="alert alert-danger">Invalid quantity.</div>`;
+                    return;
+                }
+
+                // 1. Get product info
+                const { data: product, error: prodError } = await supabase
+                    .from("tbl_products")
+                    .select("*")
+                    .eq("productid", productId)
+                    .single();
+
+                if (prodError || !product) {
+                    statusDiv.innerHTML = `<div class="alert alert-danger">Product not found.</div>`;
+                    return;
+                }
+
+                if (qty > product.quantity) {
+                    statusDiv.innerHTML = `<div class="alert alert-warning">Only ${product.quantity} items left in stock.</div>`;
+                    return;
+                }
+
+                const price = product.price * (1 - product.discount / 100);
+                const totalAmount = price * qty;
+
+                // 2. Insert order
+                const { data: order, error: orderError } = await supabase
+                    .from("tbl_orders")
+                    .insert([{
+                        userid: userId,
+                        orderdate: new Date().toISOString(),
+                        totalamount: totalAmount,
+                        phonenumber: phone,
+                        address: address
+                    }])
+                    .select()
+                    .single();
+
+                if (orderError) {
+                    statusDiv.innerHTML = `<div class="alert alert-danger">Order failed to save.</div>`;
+                    return;
+                }
+
+                // 3. Insert order item
+                const { error: itemError } = await supabase
+                    .from("tbl_order_items")
+                    .insert([{
+                        orderid: order.orderid,
+                        productid: product.productid,
+                        productname: product.productname,
+                        quantity: qty,
+                        price: product.price
+                    }]);
+
+                if (itemError) {
+                    statusDiv.innerHTML = `<div class="alert alert-danger">Failed to add order item.</div>`;
+                    return;
+                }
+
+                // 4. Update product quantity
+                const newQty = product.quantity - qty;
+
+                const { error: updateError } = await supabase
+                    .from("tbl_products")
+                    .update({
+                        quantity: newQty,
+                        purchasecount: (product.purchasecount || 0) + qty,
+                        purchasedate: new Date().toISOString(),
+                        ...(newQty === 0 && { status: false })
+                    })
+                    .eq("productid", productId);
+                if (updateError) {
+                    statusDiv.innerHTML = `<div class="alert alert-warning">Order placed, but product quantity not updated.</div>`;
+                    return;
+                }
+
+                if (updateError) {
+                    statusDiv.innerHTML = `<div class="alert alert-warning">Order placed, but product quantity not updated.</div>`;
+                    return;
+                }
+
+                // 5. Update/remove cart
+                const { data: cartItem } = await supabase
+                    .from('tbl_cart')
+                    .select("*")
+                    .eq("userid", userId)
+                    .eq("productid", productId)
+                    .single();
+
+                if (cartItem) {
+                    const newCartQty = cartItem.quantity - qty;
+                    if (newCartQty <= 0) {
+                        await supabase.from("tbl_cart")
+                            .delete()
+                            .eq("userid", userId)
+                            .eq("productid", productId);
+                    } else {
+                        await supabase.from("tbl_cart")
+                            .update({ quantity: newCartQty })
+                            .eq("userid", userId)
+                            .eq("productid", productId);
+                    }
+                }
+                if (!localStorage.getItem("buyNowData")) {
+                    statusDiv.innerHTML = `<div class="alert alert-warning">Order already processed or missing.</div>`;
+                    return;
+                }
+
+
+                // 6. Clear localStorage
+                localStorage.removeItem("buyNowData");
+
+                // 7. Show Thank You message
+                setTimeout(() => {
+                    statusDiv.innerHTML = `<div class="alert alert-success">Order placed successfully! Thank you for your purchase.</div>`;
+                }, 2000);
+
+                setTimeout(() => {
+                    window.location.href = "thankyou.html";
+                }, 3000);
+            }
+
+            processOrder();
+        }
+        mainProcess();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Profile - 2H Second-Hand</title>
+
+  <!-- Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="./css/style.css" />
+  <link rel="icon" href="favicon.ico">
+
+  <!-- jQuery + Bootstrap Bundle -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+  <div id="Header">
+    <div class="header-content">
+      <div class="title-logo-wrapper">
+        <h1 class="site-title">2H Second-Hand</h1>
+        <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+      </div>
+    </div>
+  </div>
+
+  <div id="navbar"></div>
+
+  <div class="container-fluid">
+    <div class="card shadow-sm">
+      <div class="card p-3">
+        <div class="row align-items-center">
+          <!-- Profile info -->
+          <div class="col-md-8">
+            <div class="card-header">My Profile</div>
+            <ul class="list-group list-group-flush" id="UserInfo">
+              <!-- Data will be inserted here -->
+            </ul>
+            <div class="mt-3">
+              <a id="EditLink" href="#" class="btn btn-outline-primary">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+              </a>
+              <a href="index.html" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Back to Home
+              </a>
+            </div>
+          </div>
+
+          <!-- Avatar -->
+          <div class="col-md-4 text-center">
+            <img id="AvatarImage" src="" alt="Avatar" class="img-thumbnail shadow"
+              style="width: 150px; height: 150px; object-fit: cover;">
+            <p class="mt-2 text-muted">Avatar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer" class="mt-5"></div>
+
+  <script>
+    $(function () {
+      $("#navbar").load("inc/navbar.html");
+      $("#footer").load("inc/footer.html");
+    });
+  </script>
+
+  <script type="module" src="inc/config.js"></script>
+  <script type="module">
+    import { checkLoggedIn } from './inc/auth_login.js';
+    import { supabase } from './inc/config.js';
+
+    async function mainProcess() {
+      const valid = await checkLoggedIn();
+      if (!valid) return;
+
+
+      async function loadUserProfile() {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) {
+          document.getElementById('UserInfo').innerHTML =
+            '<li class="list-group-item text-danger text-center">User is not logged in.</li>';
+          return;
+        }
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          document.getElementById('UserInfo').innerHTML =
+            '<li class="list-group-item text-danger text-center">Failed to load user data.</li>';
+          return;
+        }
+
+        const { id, email, email_confirmed_at, user_metadata } = user;
+        let fullName = user_metadata?.full_name || "undefined";
+        const avatarUrl = user_metadata?.avatar_url || "https://via.placeholder.com/150";
+        const verified = email_confirmed_at ? "✅ Verified" : "❌ Not Verified";
+
+        // Truy vấn thêm từ bảng tbl_users
+        const { data: userDetails, error: detailError } = await supabase
+          .from('tbl_users')
+          .select('full_name,phonenumber, address, role')
+          .eq('id', id)
+          .single();
+
+        let phone = "No Phone", address = "No Address", role = "user";
+        if (!detailError && userDetails) {
+          fullName = userDetails.full_name || "No Name";
+          phone = userDetails.phonenumber || "No Phone";
+          address = userDetails.address || "No Áddress";
+          role = userDetails.role || "user";
+        }
+
+        // Cập nhật thông tin hiển thị
+        document.getElementById('UserInfo').innerHTML = `
+        <li class="list-group-item"><strong>Full Name:</strong> ${fullName}</li>
+        <li class="list-group-item"><strong>Email:</strong> ${email}</li>
+        <li class="list-group-item"><strong>Email Status:</strong> ${verified}</li>
+        <li class="list-group-item"><strong>Phone Number:</strong> ${phone}</li>
+        <li class="list-group-item"><strong>Address:</strong> ${address}</li>
+        <li class="list-group-item"><strong>Role:</strong> ${role}</li>
+      `;
+
+        // Avatar và link chỉnh sửa
+        document.getElementById('AvatarImage').src = avatarUrl;
+        document.getElementById('EditLink').href = 'account_edit.html?id=' + id;
+      }
+
+      loadUserProfile();
+    }
+    mainProcess();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="inc/config.js"></script>
+
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" type="text/css" href="./css/style.css" />
+  <title>Delete Product - 2H Second-Hand</title>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div id="Header">
+      <div class="header-content">
+        <div class="title-logo-wrapper">
+          <h1 class="site-title">2H Second-Hand</h1>
+          <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
+        </div>
+      </div>
+    </div>
+    <div id="navbar"></div>
+
+    <div class="card mt-3">
+      <div class="card-header">Delete Product</div>
+      <div class="card-body" id="deleteResult">
+        <!-- Confirmation form sẽ được chèn ở đây bằng JavaScript -->
+      </div>
+    </div>
+
+    <div id="footer"></div>
+  </div>
+
+  <!-- Load header & footer -->
+  <script>
+    $(function () {
+      $('#navbar').load('inc/navbar.html');
+      $('#footer').load('inc/footer.html');
+    });
+  </script>
+
+  <!-- Delete confirmation and logic -->
+  <script type="module">
+    import { checkLoggedIn } from './inc/auth_login.js';
+    import { supabase } from "./inc/config.js";
+
+    async function mainProcess() {
+      const valid = await checkLoggedIn();
+      if (!valid) return;
+
+      const productId = new URLSearchParams(window.location.search).get("id");
+      const deleteResult = document.getElementById("deleteResult");
+
+      if (!productId) {
+        deleteResult.innerHTML = `
+          <div class="alert alert-warning">❌ Invalid product ID.</div>
+          <a href="products.html" class="btn btn-secondary mt-2">Back</a>
+        `;
+        return;
+      }
+
+      // Hiển thị form xác nhận
+      deleteResult.innerHTML = `
+        <div class="alert alert-warning">
+          <h5>Are you sure you want to delete this product?</h5>
+          <button id="confirmDelete" class="btn btn-danger me-2">
+            <i class="bi bi-trash"></i> Yes, Delete
+          </button>
+          <a href="products.html" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Cancel
+          </a>
+        </div>
+      `;
+
+      document.getElementById("confirmDelete").addEventListener("click", async () => {
+        try {
+          // Hiện spinner trong 2 giây
+          deleteResult.innerHTML = `
+            <div class="text-center my-4">
+              <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Deleting...</span>
+              </div>
+              <div class="mt-2">Deleting product...</div>
+            </div>
+          `;
+
+          const { error } = await supabase
+            .from("tbl_products")
+            .delete()
+            .eq("productid", productId);
+
+          if (error) throw error;
+
+          // Sau 2 giây hiện thông báo thành công
+          setTimeout(() => {
+            deleteResult.innerHTML = `
+              <div class="alert alert-success text-center">
+                ✅ Product deleted successfully. Redirecting...
+              </div>
+            `;
+
+            // Sau thêm 2 giây nữa thì chuyển hướng
+            setTimeout(() => {
+              window.location.href = 'products.html';
+            }, 1000);
+          }, 1000);
+
+        } catch (err) {
+          deleteResult.innerHTML = `
+            <div class="alert alert-danger">❌ Error deleting product: ${err.message}</div>
+            <a href="products.html" class="btn btn-secondary mt-2">Back</a>
+          `;
+        }
+      });
+    }
+
+    mainProcess();
+  </script>
+</body>
+
+</html>
