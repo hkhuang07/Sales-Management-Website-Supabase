@@ -28,12 +28,12 @@
 		<div class="card mt-3">
 			<div class="card-header">Processing Add Categories...</div>
 			<div class="card-body text-center">
-				
+
 				<div id="message">
 					<div class="spinner-border text-primary" role="status">
 						<span class="visually-hidden">Processing...</span>
 					</div>
-					<p class="mt-3">Please wait while we add your category...</p>
+					<p class="mt-3">Please wait while we add your listing...</p>
 				</div>
 
 			</div>
@@ -50,60 +50,86 @@
 	</script>
 
 	<script type="module">
-
 		import { checkAdminOrManagerRole } from './inc/auth_check.js';
-		const allowed = await checkAdminOrManagerRole();
-		if (!allowed) {
-			// return để ngăn không tiếp tục xử lý nếu không có quyền
-			throw new Error("Unauthorized");
-		}
-
 		import { supabase } from './inc/config.js';
 
-		const categoryName = localStorage.getItem('categoryname');
+		// Chờ cho DOM được tải hoàn chỉnh trước khi thực thi logic chính
+		window.addEventListener("DOMContentLoaded", async () => {
+			const messageDiv = document.getElementById("message");
 
-		async function addCategory() {
+			// 1. Kiểm tra quyền truy cập trước
+			try {
+				const allowed = await checkAdminOrManagerRole();
+				if (!allowed) {
+					messageDiv.innerHTML = `
+						<div class="alert alert-danger">
+							<i class="bi bi-exclamation-triangle"></i> You do not have permission to add categories. Please log in as Administrator/Manager.
+						</div>`;
+					setTimeout(() => {
+						window.location.href = 'index.html'; // Chuyển hướng về trang chủ
+					}, 3000);
+					return; // Dừng lại nếu không có quyền
+				}
+			} catch (authErr) {
+				console.error("Permission check error:", authErr);
+				messageDiv.innerHTML = `
+					<div class="alert alert-danger">
+						<i class="bi bi-bug"></i> Error checking permissions: ${authErr.message}. Please try again.
+					</div>`;
+				setTimeout(() => {
+					window.location.href = 'categories.html';
+				}, 3000);
+				return;
+			}
+
+
+			// 2. Lấy dữ liệu từ localStorage
+			const categoryName = localStorage.getItem('categoryname');
+
+			if (!categoryName) {
+				messageDiv.innerHTML = `
+					<div class="alert alert-warning">
+						<i class="bi bi-exclamation-triangle"></i> Category name not found. Please try again from the add category page.
+					</div>`;
+				setTimeout(() => {
+					window.location.href = 'categories.html'; // Quay lại trang danh sách
+				}, 2000);
+				return;
+			}
+
+			// 3. Thực hiện thêm danh mục vào Supabase
 			try {
 				const { data, error } = await supabase
 					.from('tbl_categories')
 					.insert([{ categoryname: categoryName }]);
 
+				localStorage.removeItem('categoryname'); // Xóa dữ liệu sau khi sử dụng
 
 				if (error) {
-					localStorage.removeItem('categoryname');
-
-					document.getElementById("message").innerHTML = `
-				<div class="alert alert-danger">
-					<i class="bi bi-x-circle"></i>❌ Failed to add category: ${error.message}
-				</div>`;
-					setTimeout(() => {
-						window.location.href = 'categories.html';
-					}, 2000)
+					console.error("Error adding category to Supabase:", error);
+					messageDiv.innerHTML = `
+						<div class="alert alert-danger">
+							<i class="bi bi-x-circle"></i> ❌ Add failed category: ${error.message}
+						</div>`;
 				} else {
-					localStorage.removeItem('categoryname');
-					document.getElementById("message").innerHTML = `
-				<div class="alert alert-success">
-					<i class="bi bi-check-circle"></i>✅ Category added successfully!
-				</div>`;
-					setTimeout(() => {
-						window.location.href = 'categories.html';
-					}, 2000)
+					messageDiv.innerHTML = `
+						<div class="alert alert-success">
+							<i class="bi bi-check-circle"></i> ✅ Category added successfully!
+						</div>`;
 				}
 			} catch (err) {
-				document.getElementById("message").innerHTML = `
-			<div class="alert alert-danger">
-				<i class="bi bi-bug"></i>❌ Unexpected error: ${err.message}
-			</div>`;
+				console.error("Lỗi không mong muốn trong quá trình thêm danh mục:", err);
+				messageDiv.innerHTML = `
+					<div class="alert alert-danger">
+						<i class="bi bi-bug"></i> ❌Unexpected error: ${err.message}
+					</div>`;
+			} finally {
+				// Luôn chuyển hướng sau khi xử lý xong (thành công hoặc thất bại)
+				// Để người dùng thấy kết quả trong vài giây rồi quay lại trang danh sách
 				setTimeout(() => {
 					window.location.href = 'categories.html';
-				}, 2000)
+				}, 2000);
 			}
-		}
-
-		window.addEventListener("DOMContentLoaded", () => {
-			setTimeout(() => {
-				addCategory();
-			}, 2000); // 2 seconds delay
 		});
 	</script>
 </body>
