@@ -1,13 +1,13 @@
-![image](https://github.com/user-attachments/assets/9fc869d8-0bf5-4bc5-824c-e4b4cbc32352)# 🛍️ SecondHand Sales Management Website Supabase
+🛍️ SecondHand Sales Management Website Supabase
 
 **Link Deploy Website**: (https://graceful-profiterole-21b706.netlify.app/)
 
 ## 📖 Project Overview
 <p align="center">
-  <img src="demo/header.PNG" width="800" height="200">
-  <img src="demo/index01.PNG" width="800" height="400">
-  <img src="demo/index02.PNG" width="800" height="400">
-  <img src="demo/footer.PNG" width="800" height="200"></br>
+  <img src="demo/header.PNG" width="800" height="300">
+  <img src="demo/index01.PNG" width="800" height="500">
+  <img src="demo/index02.PNG" width="800" height="500">
+  <img src="demo/footer.PNG" width="800" height="300"></br>
   
   <img src="demo/filter.PNG" width="400" height="200">
   <img src="demo/search.PNG" width="400" height="200"> </br>
