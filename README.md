@@ -10,9 +10,11 @@
   <img src="demo/orderitemlist.PNG" width="400" height="200"></br>
    <img src="demo/orderdetails.PNG" width="400" height="200">
   <img src="demo/search.PNG" width="400" height="200"></br>
-  <img src="demo/card.PNG" width="400" height="200">
-  <img src="demo/index01.PNG"width="400" height="200"></br>
+  <img src="demo/cart.PNG" width="400" height="200">
+  <img src="demo/cart_add"width="400" height="200"></br>
+  <img src="demo/index01.PNG" width="400" height="200">
   <img src="demo/index02.PNG" width="400" height="200">
+
 </p>
 
 
