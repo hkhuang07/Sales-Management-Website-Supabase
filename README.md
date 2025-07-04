@@ -265,29 +265,49 @@ This project relies heavily on Supabase for its backend. If you want to use this
 
 ## 🖥️ Project Structure
 Sales-Management-Website-Supabase/
-├── css/
+
+├──css/
 │   └── style.css              # Custom CSS for styling the website's appearance.
+
 ├── images/
 │   └──                       # Directory for static images like logos and placeholders.
+
 ├── inc/
-│   ├── config.js              # CRITICAL: Contains Supabase configuration details (Project URL & Anon Public Key) for connecting to your backend.
-│   ├── footer.html            # HTML snippet for the common footer, dynamically loaded across pages.
-│   └── navbar.html            # HTML snippet for the common navigation bar, dynamically loaded across pages.
+│    ├── config.js              # CRITICAL: Contains Supabase configuration details (Project URL & Anon Public Key) for connecting to your backend.
+│    ├── footer.html            # HTML snippet for the common footer, dynamically loaded across pages.
+
+├──navbar.html            # HTML snippet for the common navigation bar, dynamically loaded across pages.
+
 ├── account.html               # Page for user account management, including profile updates.
+
 ├── buynow.html                # Dedicated page for direct "Buy Now" purchases, skipping the full cart process.
+
 ├── cart.html                  # Displays the user's shopping cart and allows item management.
+
 ├── cart_add.html              # Script or logic handling the addition of items to the shopping cart.
+
 ├── categories.html            # Category management page, providing CRUD operations for Admin and Manager roles.
+
 ├── filter.html                # Page to display products filtered by specific categories.
+
 ├── index.html                 # The main homepage of the application, showcasing featured products.
+
 ├── order-items.html           # Page to view detailed items within an order (primarily for Admin/Manager).
+
 ├── orders.html                # Order list management page, showing all orders for Admin/Manager and user history for regular users.
+
 ├── product_details.html       # Provides a detailed view for a single product, including full descriptions and images.
+
 ├── products.html              # Product management page, offering CRUD operations for Admin and Manager roles.
+
 ├── search.html                # Displays search results for products based on user queries.
+
 ├── signin.html                # User login page for accessing authenticated features.
+
 ├── signout.html               # Handles the user logout process.
+
 ├── signup.html                # User registration page for new users.
+
 └── README.md                  # This project description file.
 ---
 ## 🤝 Contributing
