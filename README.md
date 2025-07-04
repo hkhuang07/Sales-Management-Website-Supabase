@@ -274,9 +274,8 @@ Sales-Management-Website-Supabase/
 
 ├── inc/
 │    ├── config.js              # CRITICAL: Contains Supabase configuration details (Project URL & Anon Public Key) for connecting to your backend.
-│    ├── footer.html            # HTML snippet for the common footer, dynamically loaded across pages.
-
-├──navbar.html            # HTML snippet for the common navigation bar, dynamically loaded across pages.
+     ├── footer.html            # HTML snippet for the common footer, dynamically loaded across pages
+     ├──navbar.html            # HTML snippet for the common navigation bar, dynamically loaded across pages.
 
 ├── account.html               # Page for user account management, including profile updates.
 
