@@ -1,6 +1,7 @@
-🛍️ SecondHand Sales Management Website Supabase
+# 🛍️ SecondHand Sales Management Website Supabase
 
-**Link Deploy Website**: (https://graceful-profiterole-21b706.netlify.app/)
+## Link Deploy Website
+**2H SecondHand - Sales Management Website **: (https://graceful-profiterole-21b706.netlify.app/)
 
 ## 📖 Project Overview
 <p align="center">
