@@ -17,8 +17,6 @@
 
 <body class="light-mode">
     <div class="container-fluid">
-        <!-- Light/Dark Mode Toggle -->
-
         <div id="Header">
             <div class="header-content">
                 <div class="theme-toggle text-end p-2">
@@ -35,19 +33,19 @@
 
         <div id="navbar"></div>
 
-        <!-- Main Layout with 3 Columns -->
         <div class="row mt-3">
-            <!-- Left: Filter -->
-            <div class="Left col-md-2">
-                <div class="card-header text-center fw-bold mb-2">📂 Filter</div>
-                <div id="categoryButtons" class="btn-group-vertical w-100">
-                    <!-- Danh mục sẽ được tạo động -->
+            <div class="Left col-12 col-md-4 col-lg-2 d-flex flex-column">
+                <div class="card-header mb-2">🆕 Newest Products</div>
+                <div id="latestProducts" class="newest-products-grid gap-3">
+                    </div>
+                <div class="newest-pagination-controls d-flex justify-content-between align-items-center mt-3">
+                    <button id="prevNewest" class="btn btn-info">&lt;</button>
+                    <span id="newestPageInfo" class="text-white">1 / 1</span>
+                    <button id="nextNewest" class="btn btn-info">&gt;</button>
                 </div>
             </div>
 
-            <!-- Center Content -->
-            <div class="col-md-8">
-                <!-- Best-Selling Products -->
+            <div class="col-12 col-md-8 col-lg-10">
                 <div class="card-header">🔥 Best-Selling Products</div>
                 <div id="bestSellersWrapper" class="border rounded mb-3">
                     <div id="bigPic" class="position-relative mt-3 mb-3" style="height: 300px; overflow: hidden; ">
@@ -55,13 +53,12 @@
                     <ul id="thumbs" class="d-flex gap-2 list-unstyled overflow-auto"></ul>
                 </div>
 
-                <!-- Most Favorited -->
                 <div class="card-header">⭐ Most Favorited</div>
                 <div id="favoritedProducts" class="d-flex flex-row overflow-x-auto gap-3 mb-3 border rounded"></div>
 
-                <!-- Most Viewed -->
                 <div class="card-header">👀 Most Viewed Products</div>
-                <div id="viewedProducts" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-4 g-3 mt-2 mb-3">
+                <div id="viewedProducts"
+                    class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-4 g-3 mt-2 mb-3">
                 </div>
 
                 <nav>
@@ -69,18 +66,11 @@
                 </nav>
             </div>
 
-            <!-- Right: Newest Products -->
-            <div class="Right col-md-2 d-flex flex-column">
-                <div class="card-header mb-2">🆕 Newest Products</div>
-                <div id="latestProducts" class="d-flex flex-column align-items-center gap-3"></div>
-            </div>
         </div>
 
-        <!-- Footer -->
         <div id="footer" class="mt-4"></div>
     </div>
 
-    <!-- Load common UI -->
     <script>
         $(function () {
             $('#navbar').load('inc/navbar.html');
@@ -97,11 +87,10 @@
         });
     </script>
 
-    <!-- Load Supabase and Product Data -->
     <script type="module">
         import { supabase } from './inc/config.js';
 
-        const productCard = (prod, full = true) => ` 
+        const productCard = (prod, full = true) => `
       <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
         <div class="product-card d-flex flex-column border rounded shadow-sm bg-white p-2 h-100">
           <div class="text-center">
@@ -111,7 +100,7 @@
             <h6 class="text-truncate mb-1" title="${prod.productname}">
               ${prod.productname}
             </h6>
-            <p class="text-danger fw-bold mb-1">
+            <p class="text-white fw-bold mb-1">
               ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
               <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
                 ${prod.price.toLocaleString()}₫
@@ -123,14 +112,14 @@
                   <i class="bi bi-cart-plus"></i> Add
                 </a>
                 <button class="btn btn-success buyNow" data-id="${prod.productid}">
-                  <i class="bi bi-cash-stack"></i> Buy 
+                  <i class="bi bi-cash-stack"></i> Buy
                 </button>
               </div>` : ""}
           </div>
         </div>
       </a>`;
 
-        const displayCard = (prod, full = true) => ` 
+        const displayCard = (prod, full = true) => `
       <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
         <div class="product-card d-flex flex-column border rounded shadow-sm bg-white h-100" style="min-width: 180px; max-width:180px;">
           <div class="text-center">
@@ -140,7 +129,7 @@
             <h6 class="text-truncate mb-1" title="${prod.productname}">
               ${prod.productname}
             </h6>
-            <p class="text-danger fw-bold mb-1">
+            <p class="text-white fw-bold mb-1">
               ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
               <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
                 ${prod.price.toLocaleString()}₫
@@ -152,7 +141,7 @@
                   <i class="bi bi-cart-plus"></i> Add
                 </a>
                 <button class="btn btn-success buyNow" data-id="${prod.productid}">
-                  <i class="bi bi-cash-stack"></i> Buy 
+                  <i class="bi bi-cash-stack"></i> Buy
                 </button>
               </div>` : ""}
           </div>
@@ -177,13 +166,15 @@
             }
 
             const container = document.getElementById('categoryButtons');
-            data.forEach(cat => {
-                const btn = document.createElement('a');
-                btn.href = `filter.html?q=${cat.categoryid}`;
-                btn.className = 'btn category-btn';
-                btn.textContent = cat.categoryname;
-                container.appendChild(btn);
-            });
+            if (container) { // Check if container exists
+                data.forEach(cat => {
+                    const btn = document.createElement('a');
+                    btn.href = `filter.html?q=${cat.categoryid}`;
+                    btn.className = 'btn category-btn';
+                    btn.textContent = cat.categoryname;
+                    container.appendChild(btn);
+                });
+            }
         };
 
         // Best Sellers
@@ -276,26 +267,72 @@
                 .order('favoritecount', { ascending: false });
 
             const container = document.getElementById('favoritedProducts');
+            container.innerHTML = ''; // Clear previous content
             data.forEach(prod => {
                 container.innerHTML += displayCard(prod);
             });
         };
 
-        // Newest Products
+        // Newest Products - Xử lý phân trang với nút < và >
+        let newestProductsPerPage = 8;
+        let currentNewestPageIndex = 0;
+        let allNewestProducts = [];
+        let totalNewestPages = 0;
+
         const loadLatest = async () => {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('tbl_products')
                 .select('*')
                 .order('productid', { ascending: false });
 
-            const container = document.getElementById('latestProducts');
-            data.forEach(prod => {
-                container.innerHTML += displayCard(prod, false);
-            });
+            if (error) {
+                console.error('Error loading latest products:', error.message);
+                return;
+            }
+            allNewestProducts = data;
+            totalNewestPages = Math.ceil(allNewestProducts.length / newestProductsPerPage);
+            currentNewestPageIndex = 0; // Luôn bắt đầu từ trang đầu tiên
+            displayNewestProducts();
         };
 
+        const displayNewestProducts = () => {
+            const container = document.getElementById('latestProducts');
+            container.innerHTML = '';
+
+            const startIndex = currentNewestPageIndex * newestProductsPerPage;
+            const endIndex = startIndex + newestProductsPerPage;
+            const productsToDisplay = allNewestProducts.slice(startIndex, endIndex);
+
+            productsToDisplay.forEach(prod => {
+                const productDiv = document.createElement('div');
+                productDiv.classList.add('newest-product-item');
+                productDiv.innerHTML = displayCard(prod, false);
+                container.appendChild(productDiv);
+            });
+
+            // Cập nhật thông tin trang và trạng thái nút điều hướng
+            $('#newestPageInfo').text(`${currentNewestPageIndex + 1} / ${totalNewestPages}`);
+            $('#prevNewest').prop('disabled', currentNewestPageIndex === 0);
+            $('#nextNewest').prop('disabled', currentNewestPageIndex >= totalNewestPages - 1);
+        };
+
+        $('#prevNewest').on('click', () => {
+            if (currentNewestPageIndex > 0) {
+                currentNewestPageIndex--;
+                displayNewestProducts();
+            }
+        });
+
+        $('#nextNewest').on('click', () => {
+            if (currentNewestPageIndex < totalNewestPages - 1) {
+                currentNewestPageIndex++;
+                displayNewestProducts();
+            }
+        });
+
+
         // Most Viewed with Pagination
-        let currentPage = 1;    
+        let currentPage = 1;
         const perPage = 15;
         const loadViewed = async (page = 1) => {
             const from = (page - 1) * perPage;
@@ -311,9 +348,9 @@
             container.innerHTML = '';
             data.forEach(prod => {
                 container.innerHTML += `
-          <div class="col custom-col">
-            ${productCard(prod)}
-          </div>`;
+            <div class="col custom-col">
+              ${productCard(prod)}
+            </div>`;
             });
 
             const totalPage = Math.ceil(count / perPage);
@@ -321,18 +358,18 @@
             pag.innerHTML = '';
             for (let i = 1; i <= totalPage; i++) {
                 pag.innerHTML += `
-          <li class="page-item ${i === page ? 'active' : ''}">
-            <button class="page-link" onclick="loadViewed(${i})">${i}</button>
-          </li>`;
+            <li class="page-item ${i === page ? 'active' : ''}">
+              <button class="page-link" onclick="loadViewed(${i})">${i}</button>
+            </li>`;
             }
         };
-        window.loadViewed = loadViewed;
+        window.loadViewed = loadViewed; // Expose to global scope for onclick
 
         // Load all on page load
         loadCategories();
         loadBestSellers();
         loadFavorited();
-        loadLatest();
+        loadLatest(); // Luôn gọi loadLatest để đảm bảo allNewestProducts được tải
         loadViewed(currentPage);
     </script>
 </body>
