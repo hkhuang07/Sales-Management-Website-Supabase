@@ -12,12 +12,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="light-mode">
     <div class="container-fluid">
         <div id="Header">
             <div class="header-content">
+                <div class="theme-toggle text-end p-2">
+                    <button id="themeToggle" class="btn btn-outline-primary">
+                        <i class="bi bi-moon-stars-fill"></i> Toggle Dark Mode
+                    </button>
+                </div>
                 <div class="title-logo-wrapper">
                     <h1 class="site-title">2H Second-Hand</h1>
                     <img src="images/logoHKHuang01.jpg" alt="Logo" class="logo">
@@ -27,126 +33,184 @@
 
         <div id="navbar"></div>
 
-        <!-- 🔲 Layout with Filter + Products -->
-        <div class="row mt-3">
-            <!-- 📂 Left: Filter -->
-            <div class="Left col-md-2">
-                <div class="card-header">📂 Filter</div>
-                <div class="card">
-                    <div class="card-body p-2">
-                        <div id="categoryButtons" class="btn-group-vertical w-100"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 📦 Center: Products in selected category -->
-            <div class="col-md-10">
+        <div class="row mt-3 main-content-wrapper">
+            <div class="col-12 col-md-10">
                 <div class="card">
                     <div class="card-header fw-bold">🎯 Filtered Products</div>
                     <div id="filteredProducts" class="card-body row g-3" style="background-color: aliceblue;"></div>
                 </div>
             </div>
 
+            <div class="Right col-12 col-md-4 col-lg-2 d-flex flex-column">
 
-            <!-- 📥 Footer -->
-            <div id="footer" class="mt-4"></div>
+                <div class="mb-3">
+                    <a class="card-header d-block text-center fw-bold text-decoration-none text-lightcyan"
+                        data-bs-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false"
+                        aria-controls="filterCollapse">
+                        📂 Filter Categories
+                        <i class="bi bi-chevron-down float-end"></i>
+                    </a>
+                    <div class="collapse show" id="filterCollapse">
+                        <div id="categoryButtons" class="btn-group-vertical w-100 right-column-category-buttons">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <script>
-            $(function () {
-                $('#navbar').load('inc/navbar.html');
-                $('#footer').load('inc/footer.html');
-            });
-        </script>
+        <div id="footer" class="mt-4"></div>
+    </div>
 
-        <script type="module">
-            import { supabase } from './inc/config.js';
+    <script>
+        // Light/Dark Mode Toggle (giữ nguyên)
+        $('#themeToggle').on('click', function () {
+            $('body').toggleClass('light-mode dark-mode');
+            const isDark = $('body').hasClass('dark-mode');
+            $(this).html(isDark ?
+                '<i class="bi bi-sun-fill"></i> Toggle Light Mode' :
+                '<i class="bi bi-moon-stars-fill"></i> Toggle Dark Mode');
+        });
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const catId = urlParams.get('q');
+        $(function () {
+            $('#navbar').load('inc/navbar.html');
+            $('#footer').load('inc/footer.html');
+        });
+    </script>
 
-            const displayCard = (prod) => `
-      <div class="col-md-4 col-lg-3">
-        <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
-          <div class="product-card d-flex flex-column border rounded shadow-sm bg-white p-2 h-100">
-            <div class="text-center">
-              <img src="${prod.image}" class="product-img mb-2" alt="${prod.productname}" style="max-height:150px"/>
-            </div>
-            <div class="product-body d-flex flex-column justify-content-between flex-grow-1">
-              <h6 class="text-truncate mb-1" title="${prod.productname}">${prod.productname}</h6>
-              <p class="text-danger fw-bold mb-1">
-                ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
-                <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
-                  ${prod.price.toLocaleString()}₫
-                </span>
-              </p>
-              <div class="d-flex gap-2 mt-auto">
-                <a href="cart_add.html?id=${prod.productid}" class="btn btn-primary btn-sm">
-                  <i class="bi bi-cart-plus"></i> Add
-                </a>
-                <button class="btn btn-success btn-sm buyNow" data-id="${prod.productid}">
-                  <i class="bi bi-cash-stack"></i> Buy
-                </button>
-              </div>
-            </div>
-          </div>
-        </a>
-      </div>`;
+    <script type="module">
+        import { supabase } from './inc/config.js';
 
-            const loadProducts = async () => {
-                if (!catId) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const catId = urlParams.get('q');
 
-                const { data, error } = await supabase
+        const displayCard = (prod) => `
+        <div class="col-md-4 col-lg-3">
+            <a href="product_details.html?id=${prod.productid}" class="text-decoration-none text-dark">
+                <div class="product-card d-flex flex-column border rounded shadow-sm bg-white p-2 h-100">
+                    <div class="text-center">
+                        <img src="${prod.image}" class="product-img mb-2" alt="${prod.productname}" style="max-height:150px"/>
+                    </div>
+                    <div class="product-body d-flex flex-column justify-content-between flex-grow-1">
+                        <h6 class="text-truncate mb-1" title="${prod.productname}">${prod.productname}</h6>
+                        <p class="text-danger fw-bold mb-1">
+                            ${(prod.price * (1 - prod.discount / 100)).toLocaleString()}₫
+                            <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
+                                ${prod.price.toLocaleString()}₫
+                            </span>
+                        </p>
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="cart_add.html?id=${prod.productid}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-cart-plus"></i> Add
+                            </a>
+                            <button class="btn btn-success btn-sm buyNow" data-id="${prod.productid}">
+                                <i class="bi bi-cash-stack"></i> Buy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>`;
+
+        const loadProducts = async () => {
+            let data, error;
+
+            // Nếu không có catId (filter), tải tất cả sản phẩm
+            if (!catId) {
+                const result = await supabase
+                    .from('tbl_products')
+                    .select('*');
+                data = result.data;
+                error = result.error;
+            }
+            // Nếu có catId, lọc theo categoryid
+            else {
+                const result = await supabase // Đã sửa từ supabases thành supabase
                     .from('tbl_products')
                     .select('*')
                     .eq('categoryid', catId);
+                data = result.data;
+                error = result.error;
+            }
 
-                const container = document.getElementById('filteredProducts');
-                container.innerHTML = '';
+            const container = document.getElementById('filteredProducts');
+            container.innerHTML = ''; // Clear existing content
 
-                if (error) {
-                    container.innerHTML = `<div class="alert alert-danger">Error loading products</div>`;
-                    return;
+            if (error) {
+                container.innerHTML = `<div class="alert alert-danger">Error loading products: ${error.message}</div>`;
+                console.error("Error loading products:", error);
+                return;
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="alert alert-warning">No products found.</div>`; // Thay đổi thông báo cho phù hợp hơn
+                return;
+            }
+
+            data.forEach(prod => container.innerHTML += displayCard(prod));
+        };
+
+        // Mua ngay
+        $(document).on('click', '.buyNow', function () {
+            const id = $(this).data('id');
+            window.location.href = `buynow.html?id=${id}`;
+        });
+
+        // Load danh mục để hiển thị bên trái
+        const loadCategories = async () => {
+            const { data, error } = await supabase
+                .from('tbl_categories')
+                .select('categoryid, categoryname');
+
+            if (error) {
+                console.error("Error loading categories:", error.message);
+                return;
+            }
+
+            const container = document.getElementById('categoryButtons');
+            if (!container) {
+                console.warn("Element with ID 'categoryButtons' not found.");
+                return;
+            }
+            container.innerHTML = ''; // Clear old buttons
+
+            // Thêm nút "All Products" ở đầu danh sách categories
+            const allProductsBtn = document.createElement('a');
+            allProductsBtn.href = `filter.html`; // Liên kết đến trang filter không có tham số q
+            allProductsBtn.className = 'btn category-btn w-100 text-start my-1';
+            allProductsBtn.textContent = 'All Products';
+            if (!catId) { // Nếu không có catId, coi như đang xem "All Products"
+                allProductsBtn.classList.add('btn-primary');
+                allProductsBtn.classList.remove('btn-outline-primary');
+            } else {
+                allProductsBtn.classList.add('btn-outline-primary');
+                allProductsBtn.classList.remove('btn-primary');
+            }
+            container.appendChild(allProductsBtn);
+
+
+            data.forEach(cat => {
+                const btn = document.createElement('a');
+                btn.href = `filter.html?q=${cat.categoryid}`;
+                btn.className = 'btn category-btn w-100 text-start my-1'; // Added w-100 text-start my-1
+                btn.textContent = cat.categoryname;
+                if (cat.categoryid == catId) { // == for type coercion
+                    btn.classList.add('btn-primary');
+                    btn.classList.remove('btn-outline-primary');
+                } else {
+                    btn.classList.add('btn-outline-primary');
+                    btn.classList.remove('btn-primary');
                 }
-
-                if (data.length === 0) {
-                    container.innerHTML = `<div class="alert alert-warning">No products found in this category.</div>`;
-                    return;
-                }
-
-                data.forEach(prod => container.innerHTML += displayCard(prod));
-            };
-
-            // Mua ngay
-            $(document).on('click', '.buyNow', function () {
-                const id = $(this).data('id');
-                window.location.href = `buynow.html?id=${id}`;
+                container.appendChild(btn);
             });
+        };
 
-            // Load danh mục để hiển thị lại bên trái
-            const loadCategories = async () => {
-                const { data } = await supabase
-                    .from('tbl_categories')
-                    .select('categoryid, categoryname');
-
-                const container = document.getElementById('categoryButtons');
-                data.forEach(cat => {
-                    const btn = document.createElement('a');
-                    btn.href = `filter.html?q=${cat.categoryid}`;
-                    btn.className = 'btn category-btn';
-                    btn.textContent = cat.categoryname;
-                    if (cat.categoryid == catId) {
-                        btn.classList.add('btn-primary');
-                    } else {
-                        btn.classList.add('btn-outline-primary');
-                    }
-                    container.appendChild(btn);
-                });
-            };
-
-            loadCategories();
-            loadProducts();
-        </script>
+        // Load all on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories(); // Call this to populate filter categories
+            loadProducts(); // Load products based on URL parameter
+        });
+    </script>
 </body>
 
 </html>
